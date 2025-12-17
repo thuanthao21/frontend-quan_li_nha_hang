@@ -1,8 +1,13 @@
 import axios from 'axios';
 
 
-// 1. Cấu hình địa chỉ Backend (Mặc định là localhost:8080)
+// 1. Cấu hình
 const BASE_URL = "https://backendqlnhahang-production.up.railway.app/api";
+
+// --- QUAN TRỌNG: Phải có đoạn này ---
+const api = axios.create({
+    baseURL: BASE_URL,
+});
 
 // 2. Tự động gắn Token vào mọi request (nếu đã đăng nhập)
 api.interceptors.request.use((config) => {
