@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, Statistic, Row, Col, message } from 'antd';
 import { DollarCircleOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getDashboardStatsAPI } from '../services/api';
+import { getDashboardStatsAPI } from '../../services/orderService';
 
 const DashboardPage = () => {
     const [stats, setStats] = useState({ revenue: 0, todayOrders: 0, chartData: [] });

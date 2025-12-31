@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { loginAPI } from '../services/api'; // Import hàm gọi API vừa viết
+import { loginAPI } from '../../services/authService'; // Import hàm gọi API vừa viết
 import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {

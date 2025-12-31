@@ -1,13 +1,13 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import MainLayout from './components/MainLayout';
+import LoginPage from './pages/auth/LoginPage';
+import DashboardPage from './pages/admin/DashboardPage';
+import MainLayout from './layouts/MainLayout';
 import MenuPage from './pages/MenuPage';
-import TablePage from './pages/TablePage';
-import AdminProductPage from './pages/AdminProductPage';
-import AdminUserPage from './pages/AdminUserPage';
-import KitchenPage from './pages/KitchenPage';
+import TablePage from './pages/pos/TablePage';
+import AdminProductPage from './pages/admin/AdminProductPage';
+import AdminUserPage from './pages/admin/AdminUserPage';
+import KitchenPage from './pages/kitchen/KitchenPage';
 
 
 // Component bảo vệ: Nếu chưa login thì đá về trang login

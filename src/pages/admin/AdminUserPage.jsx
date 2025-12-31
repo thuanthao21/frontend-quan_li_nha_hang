@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Popconfirm, Tag } from 'antd';
 import { DeleteOutlined, PlusOutlined, UserAddOutlined } from '@ant-design/icons';
-import { getUsersAPI, createUserAPI, deleteUserAPI } from '../services/api';
+import { getUsersAPI, createUserAPI, deleteUserAPI } from '../../services/authService';
 
 const AdminUserPage = () => {
     const [users, setUsers] = useState([]);

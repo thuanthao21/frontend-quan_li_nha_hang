@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, InputNumber, Select, message, Popconfirm, Avatar, Tag, Tooltip } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined, FileImageOutlined } from '@ant-design/icons';
-import { getProductsAPI, createProductAPI, updateProductAPI, deleteProductAPI } from '../services/api';
+import { getProductsAPI, createProductAPI, updateProductAPI, deleteProductAPI } from '../../services/productService';
 
 const AdminProductPage = () => {
     const [products, setProducts] = useState([]);

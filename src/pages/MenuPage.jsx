@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Card, Tag, Avatar, message } from 'antd';
-import { getProductsAPI } from '../services/api';
+import { getProductsAPI } from '../services/productService.js';
 
 const MenuPage = () => {
     const [products, setProducts] = useState([]);
