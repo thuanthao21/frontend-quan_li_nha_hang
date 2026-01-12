@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Row, Col, message, Modal, Tabs, Input, List, Table, Tag, Button, Space, Popconfirm } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, PrinterOutlined } from '@ant-design/icons';
+import { useReactToPrint } from 'react-to-print';
 
 // Import Service & Context
 import { getTablesAPI, createOrderAPI, getCurrentOrderAPI, payItemsAPI } from '../../services/orderService';
 import { getProductsAPI } from '../../services/productService';
 import { CartContext } from '../../context/CartContext';
+import { InvoiceTemplate } from '../../components/InvoiceTemplate';
 
 // Import Components nhỏ
 import TableCard from '../../components/specific/TableCard';

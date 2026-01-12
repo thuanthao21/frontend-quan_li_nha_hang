@@ -36,9 +36,15 @@ export const updateOrderStatusAPI = async (orderId, status) => {
     return response.data;
 };
 
-// --- DASHBOARD (Tạm để chung đây hoặc tách reportService) ---
-export const getDashboardStatsAPI = async () => {
-    const response = await axiosClient.get('/reports/dashboard');
+
+export const getDashboardStatsAPI = async (from, to) => {
+    let url = '/reports/dashboard';
+
+    if (from && to) {
+        url += `?from=${from}&to=${to}`;
+    }
+
+    const response = await axiosClient.get(url);
     return response.data;
 };
 
@@ -52,3 +58,4 @@ export const updateOrderItemStatusAPI = async (itemId, status) => {
     const response = await axiosClient.put(`/orders/items/${itemId}/status?status=${status}`);
     return response.data;
 };
+

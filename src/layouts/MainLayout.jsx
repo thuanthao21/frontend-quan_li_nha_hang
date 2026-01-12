@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Button, theme, Avatar } from 'antd';
+import { Layout, Menu, Button, theme } from 'antd';
 import {
-    MenuFoldOutlined, MenuUnfoldOutlined,
-    UserOutlined, VideoCameraOutlined, UploadOutlined,
-    LogoutOutlined, CoffeeOutlined
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    UserOutlined,
+    VideoCameraOutlined,
+    UploadOutlined,
+    LogoutOutlined,
+    CoffeeOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth'; // Dùng Hook
+import { useAuth } from '../hooks/useAuth';
 
 const { Header, Sider, Content } = Layout;
 
@@ -16,7 +20,7 @@ const MainLayout = ({ children }) => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, logout } = useAuth(); // Lấy user và hàm logout từ Context
+    const { user, logout } = useAuth();
 
     const handleLogout = () => {
         logout();
@@ -29,50 +33,82 @@ const MainLayout = ({ children }) => {
         { key: '/menu', icon: <CoffeeOutlined />, label: 'Thực đơn' },
     ];
 
-    if (user?.role === 'ADMIN') {
+    // ✅ Kiểm tra quyền từ Context (an toàn tuyệt đối)
+    if (user?.role?.toUpperCase() === 'ADMIN') {
         menuItems.push(
             { key: '/admin/products', icon: <UploadOutlined />, label: 'Quản trị Món' },
             { key: '/admin/users', icon: <UserOutlined />, label: 'Nhân sự' }
         );
     }
-    // Thêm menu cho Bếp
+
+    // Menu chung
     menuItems.push({ key: '/kitchen', icon: <CoffeeOutlined />, label: 'Bếp & Bar' });
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <Sider trigger={null} collapsible collapsed={collapsed}>
                 <div style={{
-                    height: 32, margin: 16,
+                    height: 32,
+                    margin: 16,
                     background: 'rgba(255, 255, 255, 0.2)',
-                    textAlign: 'center', color: '#fff',
-                    lineHeight: '32px', fontWeight: 'bold'
+                    textAlign: 'center',
+                    color: '#fff',
+                    lineHeight: '32px',
+                    fontWeight: 'bold'
                 }}>
                     {collapsed ? 'DF' : 'DINEFLOW'}
                 </div>
+
                 <Menu
                     theme="dark"
                     mode="inline"
-                    selectedKeys={[location.pathname]} // Tự động active menu theo URL
+                    selectedKeys={[location.pathname]}
                     onClick={({ key }) => navigate(key)}
                     items={menuItems}
                 />
             </Sider>
+
             <Layout>
-                <Header style={{ padding: '0 20px', background: colorBgContainer, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Header
+                    style={{
+                        padding: '0 20px',
+                        background: colorBgContainer,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}
+                >
                     <Button
                         type="text"
                         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                         onClick={() => setCollapsed(!collapsed)}
                         style={{ fontSize: '16px', width: 64, height: 64 }}
                     />
+
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ fontWeight: 'bold' }}>Xin chào, {user?.role}</span>
-                        <Button type="primary" danger icon={<LogoutOutlined />} onClick={handleLogout}>
+                        <span style={{ fontWeight: 'bold' }}>
+                            Xin chào, {user ? user.role.toUpperCase() : '...'}
+                        </span>
+                        <Button
+                            type="primary"
+                            danger
+                            icon={<LogoutOutlined />}
+                            onClick={handleLogout}
+                        >
                             Thoát
                         </Button>
                     </div>
                 </Header>
-                <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280, background: colorBgContainer, borderRadius: borderRadiusLG }}>
+
+                <Content
+                    style={{
+                        margin: '24px 16px',
+                        padding: 24,
+                        minHeight: 280,
+                        background: colorBgContainer,
+                        borderRadius: borderRadiusLG
+                    }}
+                >
                     {children}
                 </Content>
             </Layout>

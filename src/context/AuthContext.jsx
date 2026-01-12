@@ -1,24 +1,26 @@
+// src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null); // State này thay đổi thì App mới vẽ lại
 
     useEffect(() => {
-        // Kiểm tra xem đã đăng nhập chưa khi F5 trang
+        // Giữ đăng nhập khi F5
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
         if (token && role) {
             setUser({ token, role });
         }
-        setLoading(false);
     }, []);
 
     const login = (token, role) => {
+        // 1. Lưu vào ổ cứng (để F5 còn nhớ)
         localStorage.setItem('token', token);
         localStorage.setItem('role', role);
+
+        // 2. CẬP NHẬT STATE NGAY LẬP TỨC (Đây là bước quan trọng nhất)
         setUser({ token, role });
     };
 
@@ -29,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
