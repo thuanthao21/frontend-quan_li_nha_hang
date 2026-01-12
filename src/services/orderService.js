@@ -2,18 +2,21 @@ import axiosClient from './axiosClient';
 
 // --- POS & ORDER ---
 export const getTablesAPI = async () => {
-    const response = await axiosClient.get('/tables');
+    // SỬA: Thêm /api
+    const response = await axiosClient.get('/api/tables');
     return response.data;
 };
 
 export const createOrderAPI = async (orderData) => {
-    const response = await axiosClient.post('/orders', orderData);
+    // SỬA: Thêm /api
+    const response = await axiosClient.post('/api/orders', orderData);
     return response.data;
 };
 
 export const getCurrentOrderAPI = async (tableId) => {
     try {
-        const response = await axiosClient.get(`/orders/${tableId}/current`);
+        // SỬA: Thêm /api
+        const response = await axiosClient.get(`/api/orders/${tableId}/current`);
         return response.data;
     } catch (error) {
         return null;
@@ -21,24 +24,28 @@ export const getCurrentOrderAPI = async (tableId) => {
 };
 
 export const checkoutAPI = async (tableId) => {
-    const response = await axiosClient.post(`/orders/${tableId}/checkout`);
+    // SỬA: Thêm /api
+    const response = await axiosClient.post(`/api/orders/${tableId}/checkout`);
     return response.data;
 };
 
 // --- KITCHEN ---
 export const getKitchenOrdersAPI = async () => {
-    const response = await axiosClient.get('/orders/kitchen');
+    // SỬA: Thêm /api
+    const response = await axiosClient.get('/api/orders/kitchen');
     return response.data;
 };
 
 export const updateOrderStatusAPI = async (orderId, status) => {
-    const response = await axiosClient.put(`/orders/${orderId}/status?status=${status}`);
+    // SỬA: Thêm /api
+    const response = await axiosClient.put(`/api/orders/${orderId}/status?status=${status}`);
     return response.data;
 };
 
 
 export const getDashboardStatsAPI = async (from, to) => {
-    let url = '/reports/dashboard';
+    // SỬA: Thêm /api vào đường dẫn báo cáo
+    let url = '/api/reports/dashboard';
 
     if (from && to) {
         url += `?from=${from}&to=${to}`;
@@ -49,13 +56,13 @@ export const getDashboardStatsAPI = async (from, to) => {
 };
 
 export const payItemsAPI = async (orderId, orderItemIds) => {
-    // Gửi lên server: orderId và danh sách ID các món muốn trả tiền
-    const response = await axiosClient.post(`/orders/${orderId}/pay-items`, orderItemIds);
+    // SỬA: Thêm /api
+    const response = await axiosClient.post(`/api/orders/${orderId}/pay-items`, orderItemIds);
     return response.data;
 };
 
 export const updateOrderItemStatusAPI = async (itemId, status) => {
-    const response = await axiosClient.put(`/orders/items/${itemId}/status?status=${status}`);
+    // SỬA: Thêm /api
+    const response = await axiosClient.put(`/api/orders/items/${itemId}/status?status=${status}`);
     return response.data;
 };
-
