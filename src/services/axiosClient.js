@@ -1,9 +1,10 @@
 import axios from 'axios';
-//import { API_BASE_URL } from '../utils/constants';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const axiosClient = axios.create({
-    baseURL: API_BASE_URL,
+    // .replace(/\/$/, "") sẽ xóa dấu "/" ở cuối URL nếu có
+    baseURL: API_BASE_URL.replace(/\/$/, ""),
     headers: {
         'Content-Type': 'application/json',
     },
@@ -18,15 +19,18 @@ axiosClient.interceptors.request.use((config) => {
     return config;
 });
 
-// Interceptor: Xử lý lỗi chung (Optional)
+// Interceptor: Xử lý lỗi (401/403)
 axiosClient.interceptors.response.use(
     (response) => response,
     (error) => {
-        // Ví dụ: Nếu token hết hạn (401) thì tự logout
-        if (error.response?.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
-            window.location.href = '/login';
+        // Nếu lỗi 401 (Hết hạn) hoặc 403 (Không có quyền)
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            // Chỉ xóa token và logout nếu không phải là đang ở trang login
+            if (!window.location.pathname.includes('/login')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('role');
+                window.location.href = '/login';
+            }
         }
         throw error;
     }
