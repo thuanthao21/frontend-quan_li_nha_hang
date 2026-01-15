@@ -7,12 +7,20 @@ const useWebSocket = (topic, callback) => {
     const stompClientRef = useRef(null);
 
     useEffect(() => {
-        // Thay thế /api bằng /ws để kết nối socket
-        const socketUrl = API_BASE_URL.replace('/api', '/ws');
+        // --- SỬA ĐOẠN NÀY ---
+        // 1. Xóa chữ '/api' ở cuối nếu lỡ có
+        let cleanUrl = API_BASE_URL.replace(/\/api\/?$/, '');
+        // 2. Xóa dấu '/' ở cuối nếu có
+        cleanUrl = cleanUrl.replace(/\/$/, '');
+        // 3. Cộng chuỗi chuẩn xác
+        const socketUrl = cleanUrl + '/ws';
+
+        console.log("🔌 Connecting to WebSocket URL:", socketUrl); // Debug xem đúng link chưa
+
         const socket = new SockJS(socketUrl);
         const client = Stomp.over(socket);
 
-        // Tắt log debug cho đỡ rối console
+        // Tắt log debug (nếu muốn debug thì comment dòng này lại)
         client.debug = null;
 
         client.connect({}, () => {
@@ -35,7 +43,7 @@ const useWebSocket = (topic, callback) => {
                 client.disconnect();
             }
         };
-    }, [topic]); // Chỉ chạy lại khi topic thay đổi
+    }, [topic]);
 
     return stompClientRef.current;
 };
