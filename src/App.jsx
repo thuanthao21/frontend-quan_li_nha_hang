@@ -8,6 +8,7 @@ import TablePage from './pages/pos/TablePage';
 import AdminProductPage from './pages/admin/AdminProductPage';
 import AdminUserPage from './pages/admin/AdminUserPage';
 import KitchenPage from './pages/kitchen/KitchenPage';
+import AdminCategoryPage from './pages/admin/AdminCategoryPage'
 
 
 // Component bảo vệ: Nếu chưa login thì đá về trang login
@@ -77,6 +78,17 @@ function App() {
                 </MainLayout>
             </PrivateRoute>
         } />
+
+            <Route
+                path="/admin/categories"
+                element={
+                    <PrivateRoute>
+                        <MainLayout>
+                            <AdminCategoryPage />
+                        </MainLayout>
+                    </PrivateRoute>
+                }
+            />
         <Route path="/kitchen" element={
             <PrivateRoute>
                 <MainLayout>

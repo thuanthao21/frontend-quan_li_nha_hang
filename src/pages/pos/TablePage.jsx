@@ -1,13 +1,13 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react'; // 1. Thêm useRef
 import { Row, Col, message, Modal, Tabs, Input, List, Table, Tag, Button, Space, Popconfirm } from 'antd';
 import { SearchOutlined, PrinterOutlined } from '@ant-design/icons';
-import { useReactToPrint } from 'react-to-print';
+import { useReactToPrint } from 'react-to-print'; // 2. Import thư viện in
 
 // Import Service & Context
 import { getTablesAPI, createOrderAPI, getCurrentOrderAPI, payItemsAPI } from '../../services/orderService';
 import { getProductsAPI } from '../../services/productService';
 import { CartContext } from '../../context/CartContext';
-import { InvoiceTemplate } from '../../components/InvoiceTemplate';
+import { InvoiceTemplate } from '../../components/InvoiceTemplate'; // 3. Import mẫu hóa đơn
 
 // Import Components nhỏ
 import TableCard from '../../components/specific/TableCard';
@@ -22,11 +22,20 @@ const TablePage = () => {
     const [searchText, setSearchText] = useState('');
     const [currentOrder, setCurrentOrder] = useState(null);
 
-    // [MỚI] State lưu danh sách ID các món được tick chọn để thanh toán
+    // State lưu danh sách ID các món được tick chọn để thanh toán
     const [selectedBillItems, setSelectedBillItems] = useState([]);
 
     // Lấy state từ CartContext
     const { cart, addToCart, removeFromCart, clearCart, totalAmount } = useContext(CartContext);
+
+    // --- [MỚI] CẤU HÌNH IN ẤN ---
+    const componentRef = useRef(null); // Tạo tham chiếu
+
+const handlePrint = useReactToPrint({
+        contentRef: componentRef, // <-- Đổi thành contentRef
+        documentTitle: `Bill-${currentOrder?.id || 'new'}`,
+    });
+    // ----------------------------
 
     useEffect(() => {
         fetchData();
@@ -80,19 +89,17 @@ const TablePage = () => {
         }
     };
 
-    // [MỚI] Xử lý thanh toán (Từng món hoặc Tất cả)
+    // Xử lý thanh toán (Từng món hoặc Tất cả)
     const handlePayment = async (payAll = false) => {
         if (!currentOrder) return;
 
         let itemsToPayIds = [];
 
         if (payAll) {
-            // Nếu chọn "Thanh toán hết": Lấy tất cả món chưa trả tiền
             itemsToPayIds = currentOrder.orderItems
                 .filter(item => item.status !== 'PAID')
                 .map(item => item.id);
         } else {
-            // Nếu chọn "Thanh toán từng món": Lấy từ state checkbox
             itemsToPayIds = selectedBillItems;
         }
 
@@ -104,13 +111,13 @@ const TablePage = () => {
             await payItemsAPI(currentOrder.id, itemsToPayIds);
             message.success('Thanh toán thành công! 💰');
             setIsModalOpen(false);
-            fetchData(); // Load lại trạng thái bàn
+            fetchData();
         } catch (error) {
             message.error('Lỗi thanh toán: ' + error.message);
         }
     };
 
-    // Tab 1: Gọi món (Menu bên trái, Bill tạm bên phải)
+    // Tab 1: Gọi món
     const renderMenuTab = () => (
         <Row gutter={16} style={{ height: '500px' }}>
             <Col span={15} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -144,7 +151,7 @@ const TablePage = () => {
         </Row>
     );
 
-    // Tab 2: Hóa đơn & Thanh toán (Có checkbox chọn món)
+    // Tab 2: Hóa đơn & Thanh toán
     const renderBillTab = () => {
         if (!currentOrder) return <p style={{ textAlign: 'center', marginTop: 20 }}>Chưa có đơn hàng nào.</p>;
 
@@ -175,22 +182,18 @@ const TablePage = () => {
             },
         ];
 
-        // Cấu hình checkbox chọn dòng
         const rowSelection = {
             selectedRowKeys: selectedBillItems,
             onChange: (selectedRowKeys) => {
                 setSelectedBillItems(selectedRowKeys);
             },
             getCheckboxProps: (record) => ({
-                disabled: record.status === 'PAID', // Không cho chọn món đã trả tiền
+                disabled: record.status === 'PAID',
                 name: record.product.name,
             }),
         };
 
-        // Tính tổng tiền
         const totalOrder = currentOrder.orderItems.reduce((sum, item) => sum + (item.priceAtPurchase * item.quantity), 0);
-
-        // Tính tổng tiền ĐANG CHỌN checkbox
         const selectedTotal = currentOrder.orderItems
             .filter(item => selectedBillItems.includes(item.id))
             .reduce((sum, item) => sum + (item.priceAtPurchase * item.quantity), 0);
@@ -222,12 +225,22 @@ const TablePage = () => {
                     </div>
 
                     <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+
+                        {/* 👇 [MỚI] NÚT IN HÓA ĐƠN */}
+                        <Button
+                            icon={<PrinterOutlined />}
+                            onClick={handlePrint}
+                            disabled={!currentOrder} // Chỉ in khi có đơn
+                        >
+                            In Hóa Đơn
+                        </Button>
+
                         <Button
                             type="default"
                             onClick={() => handlePayment(false)}
                             disabled={selectedBillItems.length === 0}
                         >
-                            Thanh toán {selectedBillItems.length} món chọn
+                            Thanh toán {selectedBillItems.length} món
                         </Button>
 
                         <Popconfirm
@@ -237,7 +250,7 @@ const TablePage = () => {
                             okText="Đồng ý" cancelText="Hủy"
                         >
                             <Button type="primary" danger>
-                                THANH TOÁN TẤT CẢ
+                                T.TOÁN TẤT CẢ
                             </Button>
                         </Popconfirm>
                     </Space>
@@ -276,6 +289,14 @@ const TablePage = () => {
                     }
                 ]} />
             </Modal>
+
+            {/* 👇 [MỚI] COMPONENT HÓA ĐƠN ẨN (Để in ấn) */}
+            <div style={{ overflow: 'hidden', height: 0, width: 0 }}>
+                <InvoiceTemplate
+                    ref={componentRef}
+                    order={currentOrder}
+                />
+            </div>
         </div>
     );
 };

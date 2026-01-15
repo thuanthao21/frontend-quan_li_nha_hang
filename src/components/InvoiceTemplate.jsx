@@ -1,95 +1,80 @@
 import React from 'react';
 
-// Sử dụng forwardRef để thư viện in có thể "chụp" được component này
+// Sử dụng forwardRef để component cha có thể "nắm" được cái div này
 export const InvoiceTemplate = React.forwardRef(({ order }, ref) => {
 
-    // Nếu chưa có order, vẫn render 1 div rỗng để ref không null
-    if (!order) return <div ref={ref}></div>;
-
+    // Hàm format tiền
     const formatMoney = (amount) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
     };
 
+    // Hàm lấy giờ hiện tại
     const getCurrentTime = () => {
         const now = new Date();
-        return `${now.getHours()}:${now.getMinutes()} - ${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+        return `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes()}`;
     };
 
     return (
-        <div
-            ref={ref}
-            style={{
-                padding: '20px',
-                width: '100%',
-                maxWidth: '300px',
-                margin: '0 auto',
-                fontFamily: 'Courier New, monospace',
-                fontSize: '12px'
-            }}
-        >
-            {/* 1. Header quán */}
-            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>DINEFLOW RESTAURANT</h2>
-                <p style={{ margin: '2px 0' }}>ĐC: 123 Đường Văn Hóa, TP.HCM</p>
-                <p style={{ margin: '2px 0' }}>Hotline: 0909.123.456</p>
-                <p style={{ margin: '5px 0' }}>--------------------------------</p>
-            </div>
+        // ⚠️ QUAN TRỌNG: ref nằm ở div ngoài cùng. Div này LUÔN LUÔN tồn tại.
+        <div ref={ref} style={{ padding: '20px', width: '100%', maxWidth: '80mm', margin: '0 auto', fontFamily: 'monospace', fontSize: '12px', color: '#000' }}>
 
-            {/* 2. Thông tin đơn */}
-            <div style={{ marginBottom: '10px' }}>
-                <p style={{ margin: '2px 0' }}><strong>Bàn: {order.table?.name}</strong></p>
-                <p style={{ margin: '2px 0' }}>Số HĐ: #{order.id}</p>
-                <p style={{ margin: '2px 0' }}>Ngày: {getCurrentTime()}</p>
-                <p style={{ margin: '2px 0' }}>Thu ngân: Admin</p>
-            </div>
+            {/* Chỉ khi có order thì mới hiện nội dung bên trong */}
+            {order ? (
+                <>
+                    {/* 1. Header */}
+                    <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                        <h3 style={{ margin: '0', fontSize: '16px', fontWeight: 'bold' }}>DINEFLOW RESTAURANT</h3>
+                        <p style={{ margin: '2px 0' }}>ĐC: 123 Đường ABC, TP.HCM</p>
+                        <p style={{ margin: '2px 0' }}>Hotline: 0909.123.456</p>
+                        <p style={{ margin: '5px 0' }}>================================</p>
+                    </div>
 
-            <p style={{ margin: '5px 0' }}>--------------------------------</p>
+                    {/* 2. Info */}
+                    <div style={{ marginBottom: '10px' }}>
+                        <p style={{ margin: '2px 0' }}><strong>Bàn: {order.table?.name}</strong></p>
+                        <p style={{ margin: '2px 0' }}>Mã HĐ: #{order.id}</p>
+                        <p style={{ margin: '2px 0' }}>Ngày: {getCurrentTime()}</p>
+                    </div>
+                    <p style={{ margin: '5px 0' }}>--------------------------------</p>
 
-            {/* 3. Danh sách món */}
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr>
-                        <th style={{ textAlign: 'left', borderBottom: '1px dashed #000' }}>Món</th>
-                        <th style={{ textAlign: 'center', borderBottom: '1px dashed #000' }}>SL</th>
-                        <th style={{ textAlign: 'right', borderBottom: '1px dashed #000' }}>Tiền</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {order.orderItems.map((item, index) => (
-                        <tr key={index}>
-                            <td style={{ paddingTop: '5px' }}>{item.product.name}</td>
-                            <td style={{ textAlign: 'center', paddingTop: '5px' }}>{item.quantity}</td>
-                            <td style={{ textAlign: 'right', paddingTop: '5px' }}>
-                                {formatMoney(item.product.price * item.quantity)}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                    {/* 3. Items */}
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                        <thead>
+                            <tr>
+                                <th style={{ textAlign: 'left' }}>Món</th>
+                                <th style={{ textAlign: 'center' }}>SL</th>
+                                <th style={{ textAlign: 'right' }}>Tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {order.orderItems.map((item, index) => (
+                                <tr key={index}>
+                                    <td style={{ paddingTop: '4px' }}>{item.product.name}</td>
+                                    <td style={{ textAlign: 'center', paddingTop: '4px' }}>{item.quantity}</td>
+                                    <td style={{ textAlign: 'right', paddingTop: '4px' }}>
+                                        {formatMoney(item.product.price * item.quantity)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <p style={{ margin: '5px 0' }}>--------------------------------</p>
 
-            <p style={{ margin: '5px 0' }}>--------------------------------</p>
+                    {/* 4. Total */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', marginTop: '5px' }}>
+                        <span>TỔNG CỘNG:</span>
+                        <span>{formatMoney(order.totalAmount)}</span>
+                    </div>
 
-            {/* 4. Tổng tiền */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', marginTop: '10px' }}>
-                <span>TỔNG CỘNG:</span>
-                <span>{formatMoney(order.totalAmount)}</span>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
-                <span>Tiền khách đưa:</span>
-                <span>{formatMoney(order.totalAmount)}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Tiền thừa:</span>
-                <span>0 ₫</span>
-            </div>
-
-            {/* 5. Footer */}
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <p style={{ margin: '5px 0', fontStyle: 'italic' }}>Cảm ơn quý khách & Hẹn gặp lại!</p>
-                <p style={{ margin: '2px 0' }}>Pass Wifi: dineflow888</p>
-                <p style={{ margin: '2px 0' }}>Powered by DineFlow</p>
-            </div>
+                    {/* 5. Footer */}
+                    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                        <p style={{ margin: '2px 0', fontStyle: 'italic' }}>Cảm ơn quý khách!</p>
+                        <p style={{ margin: '2px 0' }}>Hẹn gặp lại.</p>
+                    </div>
+                </>
+            ) : (
+                <p>Đang tải dữ liệu...</p>
+            )}
         </div>
     );
 });
