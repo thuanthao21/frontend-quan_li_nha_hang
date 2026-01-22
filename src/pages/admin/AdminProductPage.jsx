@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, InputNumber, Select, message, Popconfirm, Avatar, Tag, Tooltip, Row, Col, Space, Card } from 'antd';
+import { Table, Button, Modal, Form, Input, InputNumber, Select, message, Popconfirm, Avatar, Tag, Row, Col, Space, Card, Switch, Tooltip } from 'antd'; // 1. Thêm Switch
 import { DeleteOutlined, EditOutlined, PlusOutlined, FileImageOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 
-// 1. Lấy API Món ăn từ productService
-import { getProductsAPI, createProductAPI, updateProductAPI, deleteProductAPI } from '../../services/productService';
-
-// 2. Lấy API Danh mục từ categoryService (Lấy từ file bạn vừa gửi)
+// 2. Import thêm API toggleProductStatusAPI
+import { getProductsAPI, createProductAPI, updateProductAPI, deleteProductAPI, toggleProductStatusAPI } from '../../services/productService';
 import { getCategoriesAPI } from '../../services/categoryService';
 
 const { Option } = Select;
@@ -34,10 +32,9 @@ const AdminProductPage = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            // Gọi song song 2 API từ 2 file service khác nhau
             const [productsData, categoriesData] = await Promise.all([
-                getProductsAPI(),     // Từ productService
-                getCategoriesAPI()    // Từ categoryService
+                getProductsAPI(),
+                getCategoriesAPI()
             ]);
 
             setProducts(productsData.sort((a, b) => b.id - a.id));
@@ -47,6 +44,20 @@ const AdminProductPage = () => {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // [MỚI] Hàm xử lý bật/tắt Hết món
+    const handleToggleStatus = async (productId, currentStatus) => {
+        try {
+            await toggleProductStatusAPI(productId);
+            // Cập nhật UI ngay lập tức (Optimistic update)
+            setProducts(products.map(p =>
+                p.id === productId ? { ...p, isAvailable: !currentStatus } : p
+            ));
+            message.success(currentStatus ? "Đã tắt món (Hết hàng)" : "Đã bật món (Còn hàng)");
+        } catch (error) {
+            message.error("Lỗi cập nhật trạng thái");
         }
     };
 
@@ -71,7 +82,7 @@ const AdminProductPage = () => {
         } else {
             form.resetFields();
             const defaultCat = categories.length > 0 ? categories[0].id : null;
-            form.setFieldsValue({ kitchenStation: 'BAR', categoryId: defaultCat });
+            form.setFieldsValue({ kitchenStation: 'BAR', categoryId: defaultCat, isAvailable: true });
         }
         setIsModalOpen(true);
     };
@@ -130,11 +141,29 @@ const AdminProductPage = () => {
             render: (price) => <span style={{ color: '#389e0d', fontWeight: 'bold' }}>{price.toLocaleString()} ₫</span>
         },
         {
-            title: 'Khu vực', dataIndex: 'kitchenStation', align: 'center', width: 120,
+            title: 'Khu vực', dataIndex: 'kitchenStation', align: 'center', width: 100,
             render: (station) => (
                 <Tag color={station === 'KITCHEN' ? 'orange' : 'purple'}>
                     {station === 'KITCHEN' ? 'BẾP' : 'BAR'}
                 </Tag>
+            )
+        },
+        // [MỚI] CỘT TRẠNG THÁI
+        {
+            title: 'Trạng thái',
+            dataIndex: 'isAvailable',
+            align: 'center',
+            width: 130,
+            render: (available, record) => (
+                <Tooltip title="Bấm để đổi trạng thái">
+                    <Switch
+                        checkedChildren="Còn"
+                        unCheckedChildren="Hết"
+                        checked={available !== false} // Mặc định true nếu null
+                        onChange={() => handleToggleStatus(record.id, available)}
+                        style={{ backgroundColor: available !== false ? '#52c41a' : '#ff4d4f' }}
+                    />
+                </Tooltip>
             )
         },
         {
@@ -240,6 +269,12 @@ const AdminProductPage = () => {
                                     <Option value="BAR">🍹 Quầy Bar</Option>
                                     <Option value="KITCHEN">👨‍🍳 Bếp Nấu</Option>
                                 </Select>
+                            </Form.Item>
+                        </Col>
+                        {/* Cho phép đặt trạng thái ngay khi tạo */}
+                        <Col span={12}>
+                             <Form.Item name="isAvailable" label="Trạng thái ban đầu" valuePropName="checked" initialValue={true}>
+                                <Switch checkedChildren="Còn hàng" unCheckedChildren="Hết hàng" />
                             </Form.Item>
                         </Col>
                     </Row>

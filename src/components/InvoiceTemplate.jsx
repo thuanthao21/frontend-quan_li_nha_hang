@@ -1,80 +1,134 @@
 import React from 'react';
+import dayjs from 'dayjs';
 
-// Sử dụng forwardRef để component cha có thể "nắm" được cái div này
 export const InvoiceTemplate = React.forwardRef(({ order }, ref) => {
+    if (!order) return null;
 
-    // Hàm format tiền
-    const formatMoney = (amount) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
-    };
+    // Tính toán tiền nong
+    const totalAmount = order.orderItems.reduce((sum, item) => sum + (item.priceAtPurchase * item.quantity), 0);
 
-    // Hàm lấy giờ hiện tại
-    const getCurrentTime = () => {
-        const now = new Date();
-        return `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes()}`;
-    };
+    // Giả sử có giảm giá hoặc VAT (để 0 nếu chưa làm tính năng này)
+    const discount = 0;
+    const finalAmount = totalAmount - discount;
 
     return (
-        // ⚠️ QUAN TRỌNG: ref nằm ở div ngoài cùng. Div này LUÔN LUÔN tồn tại.
-        <div ref={ref} style={{ padding: '20px', width: '100%', maxWidth: '80mm', margin: '0 auto', fontFamily: 'monospace', fontSize: '12px', color: '#000' }}>
+        <div style={{ display: 'none' }}> {/* Ẩn khỏi màn hình, chỉ hiện khi in */}
+            <div ref={ref} className="printable-bill">
+                {/* 1. HEADER QUÁN */}
+                <div style={{ textAlign: 'center', marginBottom: 10 }}>
+                    <h2 style={{ margin: 0, textTransform: 'uppercase', fontSize: 22 }}>DINEFLOW COFFEE</h2>
+                    <p style={{ margin: '5px 0', fontSize: 12 }}>
+                        123 Đường ABC, Quận 1, TP.HCM<br />
+                        Hotline: 0909.123.456
+                    </p>
+                    <div style={{ borderBottom: '2px dashed #000', margin: '10px 0' }}></div>
+                </div>
 
-            {/* Chỉ khi có order thì mới hiện nội dung bên trong */}
-            {order ? (
-                <>
-                    {/* 1. Header */}
-                    <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                        <h3 style={{ margin: '0', fontSize: '16px', fontWeight: 'bold' }}>DINEFLOW RESTAURANT</h3>
-                        <p style={{ margin: '2px 0' }}>ĐC: 123 Đường ABC, TP.HCM</p>
-                        <p style={{ margin: '2px 0' }}>Hotline: 0909.123.456</p>
-                        <p style={{ margin: '5px 0' }}>================================</p>
+                {/* 2. THÔNG TIN ĐƠN */}
+                <div style={{ fontSize: 12, marginBottom: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Hóa đơn:</span>
+                        <b>#{order.id}</b>
                     </div>
-
-                    {/* 2. Info */}
-                    <div style={{ marginBottom: '10px' }}>
-                        <p style={{ margin: '2px 0' }}><strong>Bàn: {order.table?.name}</strong></p>
-                        <p style={{ margin: '2px 0' }}>Mã HĐ: #{order.id}</p>
-                        <p style={{ margin: '2px 0' }}>Ngày: {getCurrentTime()}</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Ngày:</span>
+                        <span>{dayjs().format('DD/MM/YYYY HH:mm')}</span>
                     </div>
-                    <p style={{ margin: '5px 0' }}>--------------------------------</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Bàn:</span>
+                        <b>{order.table?.name || 'Mang về'}</b>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Thu ngân:</span>
+                        <span>Admin</span>
+                    </div>
+                </div>
 
-                    {/* 3. Items */}
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead>
-                            <tr>
-                                <th style={{ textAlign: 'left' }}>Món</th>
-                                <th style={{ textAlign: 'center' }}>SL</th>
-                                <th style={{ textAlign: 'right' }}>Tiền</th>
+                <div style={{ borderBottom: '1px solid #000', margin: '5px 0' }}></div>
+
+                {/* 3. DANH SÁCH MÓN */}
+                <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ textAlign: 'left' }}>
+                            <th style={{ padding: '5px 0' }}>Món</th>
+                            <th style={{ textAlign: 'center', width: 30 }}>SL</th>
+                            <th style={{ textAlign: 'right' }}>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {order.orderItems.map((item, index) => (
+                            <tr key={index}>
+                                <td style={{ padding: '5px 0', verticalAlign: 'top' }}>
+                                    {item.product.name}
+                                    {/* Nếu có ghi chú thì hiện nhỏ bên dưới */}
+                                    {item.note && <div style={{ fontSize: 10, fontStyle: 'italic' }}>({item.note})</div>}
+                                </td>
+                                <td style={{ textAlign: 'center', verticalAlign: 'top', paddingTop: 5 }}>
+                                    {item.quantity}
+                                </td>
+                                <td style={{ textAlign: 'right', verticalAlign: 'top', paddingTop: 5 }}>
+                                    {(item.priceAtPurchase * item.quantity).toLocaleString()}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {order.orderItems.map((item, index) => (
-                                <tr key={index}>
-                                    <td style={{ paddingTop: '4px' }}>{item.product.name}</td>
-                                    <td style={{ textAlign: 'center', paddingTop: '4px' }}>{item.quantity}</td>
-                                    <td style={{ textAlign: 'right', paddingTop: '4px' }}>
-                                        {formatMoney(item.product.price * item.quantity)}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <p style={{ margin: '5px 0' }}>--------------------------------</p>
+                        ))}
+                    </tbody>
+                </table>
 
-                    {/* 4. Total */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', marginTop: '5px' }}>
-                        <span>TỔNG CỘNG:</span>
-                        <span>{formatMoney(order.totalAmount)}</span>
-                    </div>
+                <div style={{ borderBottom: '1px dashed #000', margin: '10px 0' }}></div>
 
-                    {/* 5. Footer */}
-                    <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                        <p style={{ margin: '2px 0', fontStyle: 'italic' }}>Cảm ơn quý khách!</p>
-                        <p style={{ margin: '2px 0' }}>Hẹn gặp lại.</p>
+                {/* 4. TỔNG TIỀN */}
+                <div style={{ fontSize: 13 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                        <span>Tổng tiền:</span>
+                        <span>{totalAmount.toLocaleString()} đ</span>
                     </div>
-                </>
-            ) : (
-                <p>Đang tải dữ liệu...</p>
-            )}
+                    {discount > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                            <span>Giảm giá:</span>
+                            <span>-{discount.toLocaleString()} đ</span>
+                        </div>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: 18, marginTop: 5 }}>
+                        <span>THANH TOÁN:</span>
+                        <span>{finalAmount.toLocaleString()} đ</span>
+                    </div>
+                </div>
+
+                <div style={{ borderBottom: '2px dashed #000', margin: '15px 0' }}></div>
+
+                {/* 5. FOOTER */}
+                <div style={{ textAlign: 'center', fontSize: 12 }}>
+                    <p style={{ margin: 5 }}>Wifi: DineFlowFree / Pass: 12345678</p>
+                    <p style={{ fontStyle: 'italic', marginTop: 10 }}>Cảm ơn và hẹn gặp lại quý khách!</p>
+                    <p style={{ fontSize: 10 }}>Powered by DineFlow POS</p>
+                </div>
+
+                {/* STYLE RIÊNG CHO LÚC IN */}
+                <style>{`
+                    @media print {
+                        body * {
+                            visibility: hidden;
+                        }
+                        .printable-bill, .printable-bill * {
+                            visibility: visible;
+                        }
+                        .printable-bill {
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            width: 80mm; /* Khổ giấy in nhiệt tiêu chuẩn */
+                            padding: 10px;
+                            font-family: 'Courier New', Courier, monospace; /* Font giống máy in */
+                            color: black;
+                            background: white;
+                        }
+                        @page {
+                            size: auto;
+                            margin: 0mm;
+                        }
+                    }
+                `}</style>
+            </div>
         </div>
     );
 });

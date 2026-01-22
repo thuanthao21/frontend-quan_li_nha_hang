@@ -16,12 +16,25 @@ const LoginPage = () => {
             // 1. Gọi API
             const data = await loginAPI(values.username, values.password);
 
-            // ✅ 2. Gọi Context (KHÔNG set localStorage ở đây)
+            // ✅ 2. Gọi Context để lưu trạng thái đăng nhập
             login(data.token, data.role);
 
             message.success('Đăng nhập thành công! 🎉');
-            navigate('/dashboard');
+
+            // 🚀 [SỬA ĐOẠN NÀY] ĐIỀU HƯỚNG DỰA TRÊN ROLE
+            // Giả sử backend trả về role là: "ADMIN", "KITCHEN", "STAFF"
+            const role = data.role;
+
+            if (role === 'KITCHEN') {
+                navigate('/kitchen'); // Bếp -> vào trang Bếp
+            } else if (role === 'STAFF') {
+                navigate('/tables');  // Nhân viên -> vào trang chọn Bàn (hoặc trang Menu)
+            } else {
+                navigate('/dashboard'); // Admin -> vào Dashboard
+            }
+
         } catch (error) {
+            console.error(error);
             message.error('Đăng nhập thất bại! Kiểm tra lại tài khoản.');
         } finally {
             setLoading(false);
@@ -36,7 +49,7 @@ const LoginPage = () => {
                         name="username"
                         rules={[{ required: true, message: 'Vui lòng nhập Username!' }]}
                     >
-                        <Input prefix={<UserOutlined />} placeholder="Username (admin/staff)" size="large" />
+                        <Input prefix={<UserOutlined />} placeholder="Username" size="large" />
                     </Form.Item>
 
                     <Form.Item

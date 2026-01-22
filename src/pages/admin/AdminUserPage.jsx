@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Popconfirm, Tag, Tooltip, Space, Card, Row, Col } from 'antd';
-// Thêm DeleteOutlined
 import { UserAddOutlined, EditOutlined, LockOutlined, UnlockOutlined, ReloadOutlined, SearchOutlined, DeleteOutlined } from '@ant-design/icons';
-// Thêm deleteUserAPI
 import { getUsersAPI, createUserAPI, updateUserAPI, toggleUserStatusAPI, resetPasswordAPI, deleteUserAPI } from '../../services/authService';
 
 const AdminUserPage = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState(null); // Lưu user đang sửa
+    const [editingUser, setEditingUser] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [form] = Form.useForm();
 
@@ -29,26 +27,22 @@ const AdminUserPage = () => {
         }
     };
 
-    // Mở Modal (Nếu có user -> Edit, Không có -> Create)
     const handleOpenModal = (user = null) => {
         setEditingUser(user);
         if (user) {
-            form.setFieldsValue(user); // Fill dữ liệu cũ vào form
+            form.setFieldsValue(user);
         } else {
-            form.resetFields(); // Reset form
+            form.resetFields();
         }
         setIsModalOpen(true);
     };
 
-    // Xử lý Lưu (Tạo hoặc Cập nhật)
     const handleSave = async (values) => {
         try {
             if (editingUser) {
-                // Update
                 await updateUserAPI(editingUser.id, values);
                 message.success('Cập nhật thông tin thành công!');
             } else {
-                // Create
                 await createUserAPI(values);
                 message.success('Tạo nhân viên thành công! Mật khẩu: 123456');
             }
@@ -59,7 +53,6 @@ const AdminUserPage = () => {
         }
     };
 
-    // Xử lý Khóa/Mở khóa
     const handleToggleStatus = async (id) => {
         try {
             await toggleUserStatusAPI(id);
@@ -70,7 +63,6 @@ const AdminUserPage = () => {
         }
     };
 
-    // Xử lý Reset mật khẩu
     const handleResetPassword = async (id) => {
         try {
             await resetPasswordAPI(id);
@@ -80,19 +72,16 @@ const AdminUserPage = () => {
         }
     };
 
-    // [MỚI] Xử lý Xóa vĩnh viễn
     const handleDelete = async (id) => {
         try {
             await deleteUserAPI(id);
             message.success('Đã xóa vĩnh viễn nhân viên!');
             fetchUsers();
         } catch (error) {
-            // Hiển thị lỗi từ backend (Ví dụ: Đã có đơn hàng...)
             message.error(error.response?.data || 'Xóa thất bại!');
         }
     };
 
-    // Lọc user theo tìm kiếm
     const filteredUsers = users.filter(u =>
         u.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
         u.username.toLowerCase().includes(searchText.toLowerCase())
@@ -112,7 +101,14 @@ const AdminUserPage = () => {
         },
         {
             title: 'Chức vụ', dataIndex: 'role', align: 'center',
-            render: (role) => <Tag color={role === 'ADMIN' ? 'red' : 'blue'}>{role}</Tag>
+            render: (role) => {
+                // [MỚI] Thêm màu cho KITCHEN để dễ nhìn
+                let color = 'blue';
+                if (role === 'ADMIN') color = 'red';
+                if (role === 'KITCHEN') color = 'orange';
+
+                return <Tag color={color}>{role}</Tag>;
+            }
         },
         {
             title: 'Trạng thái', dataIndex: 'active', align: 'center',
@@ -126,19 +122,16 @@ const AdminUserPage = () => {
             title: 'Hành động', align: 'center', width: 220,
             render: (_, record) => (
                 <Space>
-                    {/* Nút Sửa */}
                     <Tooltip title="Sửa thông tin">
                         <Button type="text" icon={<EditOutlined style={{ color: '#1890ff' }} />} onClick={() => handleOpenModal(record)} />
                     </Tooltip>
 
-                    {/* Nút Reset Pass */}
                     <Popconfirm title="Reset mật khẩu về 123456?" onConfirm={() => handleResetPassword(record.id)}>
                         <Tooltip title="Reset mật khẩu">
                             <Button type="text" icon={<ReloadOutlined style={{ color: 'orange' }} />} />
                         </Tooltip>
                     </Popconfirm>
 
-                    {/* Nút Khóa/Mở khóa */}
                     <Popconfirm
                         title={record.active ? "Khóa tài khoản này?" : "Mở khóa tài khoản này?"}
                         onConfirm={() => handleToggleStatus(record.id)}
@@ -153,7 +146,6 @@ const AdminUserPage = () => {
                         </Tooltip>
                     </Popconfirm>
 
-                    {/* [MỚI] Nút Xóa vĩnh viễn */}
                     <Popconfirm
                         title="XÓA VĨNH VIỄN?"
                         description="Hành động này không thể hoàn tác!"
@@ -172,7 +164,6 @@ const AdminUserPage = () => {
 
     return (
         <div style={{ padding: 20 }}>
-            {/* Header & Search */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
                 <h2>👥 Quản Lý Nhân Sự</h2>
                 <Button type="primary" icon={<UserAddOutlined />} onClick={() => handleOpenModal(null)}>
@@ -197,7 +188,6 @@ const AdminUserPage = () => {
 
             <Table dataSource={filteredUsers} columns={columns} rowKey="id" loading={loading} pagination={{ pageSize: 8 }} />
 
-            {/* Modal Create/Edit */}
             <Modal
                 title={editingUser ? "✏️ Cập Nhật Thông Tin" : "✨ Thêm Nhân Viên Mới"}
                 open={isModalOpen}
@@ -209,16 +199,17 @@ const AdminUserPage = () => {
                 <Form form={form} onFinish={handleSave} layout="vertical">
                     <Form.Item name="username" label="Tên đăng nhập" rules={[{ required: true, message: 'Vui lòng nhập!' }]}>
                         <Input disabled={!!editingUser} placeholder="VD: staff01" />
-                        {/* Khi sửa thì không cho đổi username */}
                     </Form.Item>
 
                     <Form.Item name="fullName" label="Họ và tên" rules={[{ required: true, message: 'Vui lòng nhập!' }]}>
                         <Input placeholder="VD: Nguyễn Văn A" />
                     </Form.Item>
 
+                    {/* 👇 ĐÃ THÊM QUYỀN KITCHEN Ở ĐÂY 👇 */}
                     <Form.Item name="role" label="Chức vụ" initialValue="STAFF">
                         <Select>
-                            <Select.Option value="STAFF">Nhân viên</Select.Option>
+                            <Select.Option value="STAFF">Nhân viên (Staff)</Select.Option>
+                            <Select.Option value="KITCHEN">Đầu bếp (Kitchen)</Select.Option>
                             <Select.Option value="ADMIN">Quản lý (Admin)</Select.Option>
                         </Select>
                     </Form.Item>

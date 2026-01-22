@@ -1,7 +1,9 @@
 import React from 'react';
-import { List, Button } from 'antd';
+import { List, Button, Input } from 'antd'; // Import thêm Input
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
-const BillReceipt = ({ cart, onRemove, totalAmount, onSubmit }) => {
+// Nhận thêm prop updateNote
+const BillReceipt = ({ cart, onRemove, updateNote, totalAmount, onSubmit }) => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', borderLeft: '1px solid #f0f0f0', paddingLeft: 10 }}>
             <h4 style={{ margin: '0 0 10px 0' }}>Đang chọn ({cart.reduce((sum, i) => sum + i.quantity, 0)})</h4>
@@ -11,17 +13,36 @@ const BillReceipt = ({ cart, onRemove, totalAmount, onSubmit }) => {
                     itemLayout="horizontal"
                     dataSource={cart}
                     renderItem={item => (
-                        <List.Item actions={[
-                            <Button size="small" danger type="text" onClick={() => onRemove(item.productId)}>X</Button>
-                        ]}>
-                            <List.Item.Meta
-                                title={<span style={{ fontSize: 13 }}>{item.name}</span>}
-                                description={
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span>{item.price.toLocaleString()}</span>
-                                        <span style={{ fontWeight: 'bold', color: 'black' }}>x{item.quantity}</span>
+                        <List.Item style={{ padding: '10px 0', borderBottom: '1px dashed #eee', display: 'block' }}>
+                            {/* Dòng 1: Tên món + Nút xóa */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 5 }}>
+                                <div>
+                                    <div style={{ fontWeight: 500 }}>{item.name}</div>
+                                    <div style={{ fontSize: 12, color: '#666' }}>
+                                        {item.price.toLocaleString()} x <b style={{ color: 'black' }}>{item.quantity}</b>
                                     </div>
-                                }
+                                </div>
+                                <Button
+                                    size="small"
+                                    danger
+                                    type="text"
+                                    icon={<DeleteOutlined />}
+                                    onClick={() => onRemove(item.productId)}
+                                />
+                            </div>
+
+                            {/* Dòng 2: [MỚI] Ô nhập ghi chú */}
+                            <Input
+                                prefix={<EditOutlined style={{ color: '#bfbfbf', fontSize: 12 }} />}
+                                placeholder="Ghi chú (vd: ít đá, cay...)"
+                                size="small"
+                                value={item.note}
+                                onChange={(e) => updateNote(item.productId, e.target.value)}
+                                style={{
+                                    fontSize: 12,
+                                    backgroundColor: '#fafafa',
+                                    border: item.note ? '1px solid #1890ff' : '1px solid #d9d9d9'
+                                }}
                             />
                         </List.Item>
                     )}

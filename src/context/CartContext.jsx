@@ -21,7 +21,7 @@ export const CartProvider = ({ children }) => {
                 name: product.name,
                 price: product.price,
                 quantity: 1,
-                note: ''
+                note: '' // Khởi tạo ghi chú rỗng
             }]);
         }
         message.success(`Đã thêm ${product.name}`);
@@ -43,6 +43,13 @@ export const CartProvider = ({ children }) => {
         ));
     };
 
+    // [MỚI] Hàm cập nhật ghi chú
+    const updateNote = (productId, noteText) => {
+        setCart(cart.map(item =>
+            item.productId === productId ? { ...item, note: noteText } : item
+        ));
+    };
+
     // Xóa sạch giỏ (sau khi gửi bếp)
     const clearCart = () => setCart([]);
 
@@ -50,7 +57,15 @@ export const CartProvider = ({ children }) => {
     const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     return (
-        <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalAmount }}>
+        <CartContext.Provider value={{
+            cart,
+            addToCart,
+            removeFromCart,
+            updateQuantity,
+            updateNote, // <--- Nhớ export hàm này
+            clearCart,
+            totalAmount
+        }}>
             {children}
         </CartContext.Provider>
     );
